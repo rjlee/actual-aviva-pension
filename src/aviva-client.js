@@ -26,15 +26,18 @@ function submitTwoFACode(code) {
  * @param {{email: string, password: string, cookiesPath: string, timeout: number}} opts
  * @returns {Promise<number>} pension value as a float
  */
-async function getPensionValue({ email, password, cookiesPath, timeout = 60 }) {
+async function getPensionValue({ email, password, cookiesPath, timeout = 60, debug = false }) {
   serverState.status = 'idle';
   serverState.error = null;
   serverState.value = null;
   let browser;
   try {
+    // Launch Chrome: headful if debug, else headless with sandbox disabled
     browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      headless: !debug,
+      args: debug
+        ? []
+        : ['--no-sandbox', '--disable-setuid-sandbox'],
     });
     const page = await browser.newPage();
     // Load cookies if available

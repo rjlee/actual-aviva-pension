@@ -12,7 +12,7 @@ const api = require('@actual-app/api');
  * @param {{verbose?: boolean, useLogger?: boolean}} options
  * @returns {Promise<number>} Number of pot syncs applied
  */
-async function runSync({ verbose = false, useLogger = false } = {}) {
+async function runSync({ verbose = false, useLogger = false, debug = false } = {}) {
   const log =
     verbose || useLogger
       ? logger
@@ -57,6 +57,7 @@ async function runSync({ verbose = false, useLogger = false } = {}) {
       password: process.env.AVIVA_PASSWORD,
       cookiesPath: process.env.AVIVA_COOKIES_FILE,
       timeout: parseInt(process.env.AVIVA_2FA_TIMEOUT, 10) || 60,
+      debug,
     });
     // Process each mapped entry
     for (const entry of mapping) {

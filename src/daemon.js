@@ -47,14 +47,14 @@ function scheduleSync(verbose) {
  * Run the daemon: start web UI if requested and schedule sync jobs.
  * @param {{ui: boolean, httpPort: number}} options
  */
-async function runDaemon({ verbose, ui, httpPort }) {
+async function runDaemon({ verbose, ui, httpPort, debug }) {
   const explicitPort =
     typeof config.httpPort !== 'undefined' ||
     typeof config.HTTP_PORT !== 'undefined' ||
     typeof process.env.HTTP_PORT !== 'undefined';
   if (ui || explicitPort) {
-    // Launch Web UI server and catch errors to avoid unhandled promise rejections
-    Promise.resolve(startWebUi(httpPort, verbose)).catch((err) => {
+    // Launch Web UI server (pass debug) and catch errors to avoid unhandled promise rejections
+    Promise.resolve(startWebUi(httpPort, verbose, debug)).catch((err) => {
       logger.error({ err }, 'Web UI server failed');
     });
   }

@@ -34,20 +34,26 @@ async function main(args = process.argv.slice(2)) {
       default: parseInt(config.httpPort ?? config.HTTP_PORT ?? process.env.HTTP_PORT ?? 3000, 10),
       describe: 'Port for web UI server',
     })
+    .option('debug', {
+      alias: 'd',
+      type: 'boolean',
+      default: false,
+      describe: 'Launch Puppeteer in headful (debug) mode',
+    })
     .help().argv;
 
-  const { mode, ui, httpPort, verbose } = argv;
+  const { mode, ui, httpPort, verbose, debug } = argv;
   if (verbose) {
     const logger = require('./logger');
     logger.level = 'debug';
   }
   switch (mode) {
     case 'sync':
-      await runSync({ verbose });
+      await runSync({ verbose, debug });
       break;
 
     case 'daemon':
-      await runDaemon({ verbose, ui, httpPort });
+      await runDaemon({ verbose, ui, httpPort, debug });
       break;
   }
 }

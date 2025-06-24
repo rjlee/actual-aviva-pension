@@ -30,7 +30,7 @@ function uiPageHtml(hadRefreshToken, refreshError, uiAuthEnabled) {
 /**
  * Launch the Express-based UI server
  */
-async function startWebUi(httpPort, verbose) {
+async function startWebUi(httpPort, verbose, debug) {
   // Aviva-client initial state: no pre-refresh; serverState will track login status
   let hadRefreshToken = false;
   let refreshError = null;
@@ -140,12 +140,13 @@ async function startWebUi(httpPort, verbose) {
   app.post(
     '/api/aviva/login',
     asyncHandler(async (_req, res) => {
-      // Start login and pension fetch in background
+      // Start login and pension fetch in background (pass debug flag)
       getPensionValue({
         email: process.env.AVIVA_EMAIL,
         password: process.env.AVIVA_PASSWORD,
         cookiesPath: process.env.AVIVA_COOKIES_FILE,
         timeout: parseInt(process.env.AVIVA_2FA_TIMEOUT, 10) || 60,
+        debug,
       }).catch(() => {});
       return res.json({ status: serverState.status });
     })
