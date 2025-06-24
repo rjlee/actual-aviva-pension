@@ -7,8 +7,8 @@ node_modules/
 # Environment files
 .env
 
-# Monzo token cache directory
-monzo_cache/
+# (Obsolete) Monzo token cache directory
+# monzo_cache/
 
 # Actual Budget cache directories (generated)
 budget/
@@ -23,11 +23,17 @@ data/budget/*
 resources/
 
 # Coverage directory
-# Coverage directory
 coverage/
 
 # Misc scripts to ignore
 deploy.sh
+
+# IDE settings
+.vscode/
+.idea/
+
+# dotenv local overrides
+.env.local
 
 # Misc
 .DS_Store
