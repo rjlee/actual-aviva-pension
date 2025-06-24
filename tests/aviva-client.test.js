@@ -10,14 +10,16 @@ describe('Aviva Client', () => {
   beforeEach(() => {
     page = {
       goto: jest.fn(),
-      setCookie: jest.fn(),
+      setUserAgent: jest.fn(),
+      setViewport: jest.fn(),
+      setCookie: jest.fn().mockResolvedValue(),
       reload: jest.fn(),
       waitForSelector: jest.fn(),
       click: jest.fn(),
       type: jest.fn(),
       $eval: jest.fn(),
       cookies: jest.fn().mockResolvedValue([]),
-      close: jest.fn()
+      close: jest.fn(),
     };
     browser = {
       newPage: jest.fn().mockResolvedValue(page),
