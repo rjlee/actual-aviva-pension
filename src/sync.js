@@ -81,9 +81,11 @@ async function runSync({ verbose = false, useLogger = false } = {}) {
       log.info({ delta }, 'Syncing pension change');
       // Create or find a payee for imported transactions
       const PAYEE_NAME = 'actual-aviva-pension';
+      // Fetch existing payees (fallback to empty array on error or invalid response)
       let payees = [];
       try {
-        payees = await api.getPayees();
+        const result = await api.getPayees();
+        payees = Array.isArray(result) ? result : [];
       } catch {
         /* ignore errors fetching payees */
       }

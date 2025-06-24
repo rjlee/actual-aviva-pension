@@ -2,6 +2,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const api = require('@actual-app/api');
+const logger = require('./logger');
 
 async function openBudget() {
   const url = process.env.ACTUAL_SERVER_URL;

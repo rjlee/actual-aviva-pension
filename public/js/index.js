@@ -1,4 +1,3 @@
-document.getElementById('saveBtn').onclick = async () => {
 /* eslint-env browser */
 
 // UI elements
@@ -21,7 +20,9 @@ async function init() {
     const res = await fetch('/api/budget-status');
     const { ready } = await res.json();
     if (!ready) await new Promise(r => setTimeout(r, 1000));
-  } catch {}
+  } catch {
+    /* ignore budget status errors */
+  }
   // Load mapping and accounts
   await loadData();
 }
@@ -120,5 +121,3 @@ syncBtn.onclick = async () => {
 
 // Initialize on load
 document.addEventListener('DOMContentLoaded', init);
-loadData(false);
-waitForBudgetThenLoad();

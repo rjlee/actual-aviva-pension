@@ -43,14 +43,16 @@ async function getPensionValue({ email, password, cookiesPath, timeout = 60 }) {
       const cookies = JSON.parse(cookiesJson);
       await page.setCookie(...cookies);
     } catch (_err) {
-      // ignore missing or invalid cookies
+      /* ignore missing or invalid cookies */
     }
     // Navigate to login
     await page.goto('https://www.direct.aviva.co.uk/MyAccount/login', { waitUntil: 'networkidle2' });
     // Accept cookies banner if present
     try {
       await page.click('button:has-text("Accept all cookies")');
-    } catch (_err) {}
+    } catch (_err) {
+      /* ignore cookie banner errors */
+    }
     // Fill credentials
     await page.type('#username', email);
     await page.type('#password', password);
@@ -75,12 +77,12 @@ async function getPensionValue({ email, password, cookiesPath, timeout = 60 }) {
     await page.waitForSelector('dl.detailsList', { timeout: 15000 });
     // Extract pension value text
     const text = await page.$eval('dl.detailsList', (el) => el.textContent);
-    const match = text.match(/£([\d,\.]+)/);
+    const match = text.match(/£([\d.,]+)/);
     if (!match) throw new Error('Pension value not found');
     const value = parseFloat(match[1].replace(/,/g, ''));
     // Logout and save cookies
     await page.goto('https://www.direct.aviva.co.uk/MyAccount/Logout/LogMeOut');
-    const cookies = await page.cookies();
+    const cookies = (await page.cookies()) || [];
     await fs.mkdir(path.dirname(cookiesPath), { recursive: true });
     await fs.writeFile(cookiesPath, JSON.stringify(cookies, null, 2));
     serverState.status = 'logged-in';

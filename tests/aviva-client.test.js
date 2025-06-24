@@ -16,7 +16,7 @@ describe('Aviva Client', () => {
       click: jest.fn(),
       type: jest.fn(),
       $eval: jest.fn(),
-      cookies: jest.fn(),
+      cookies: jest.fn().mockResolvedValue([]),
       close: jest.fn()
     };
     browser = {
