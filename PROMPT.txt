@@ -1,0 +1,6 @@
+I'd like you to write an application that talks the the aviva pensions website, retrieves the pension values and syncs them to an account in actualbudget.  I've provided some resources to help in the resources/ directory
+
+resources/actual-monzo-pots - this is an application that integrates with actualbudget and syncronises balances from monzo pots - use this for the basis of your application.  Importanly, this apprication doesn't need to speak to Monzo, it needs to speak to aviva
+resources/im-landg - this is an application that talks to the aviva website, using a headless browser and syncs pension values to another financial system - use this to understand how to get the data from the aviva website
+
+I'd like the application to run as a daemon, similar to actual-monzo-pots and provide a web interface that allows the user to specify the SMS code, login, logout and run the sync when requested. I'd like you to provide docker build, workflows, tls, authoirsations, tests and a README like actual-monzo-pots
