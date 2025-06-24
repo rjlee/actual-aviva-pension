@@ -1,29 +1,33 @@
+document.getElementById('saveBtn').onclick = async () => {
 /* eslint-env browser */
-// Global config passed from server-side EJS
-const { hadRefreshToken } = window.__UI_CONFIG;
 
-// Check for auth=success or auth=error in the URL
-(function () {
-  const statusEl = document.getElementById('status');
-  if (!statusEl) return;
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('auth') === 'success') {
-    statusEl.textContent = 'Monzo authentication successful';
-    statusEl.className = 'mt-4 text-center text-success';
-    setTimeout(loadData, 200);
-  } else if (params.get('auth') === 'error') {
-    statusEl.textContent = 'Monzo authentication failed: ' + params.get('message');
-    statusEl.className = 'mt-4 text-center text-danger';
-  }
-})();
+// UI elements
+const loginBtn = document.getElementById('loginBtn');
+const twofaSection = document.getElementById('twofaSection');
+const submit2faBtn = document.getElementById('submit2faBtn');
+const loginStatus = document.getElementById('loginStatus');
+const pensionValueEl = document.getElementById('pensionValue');
+const accountSelect = document.getElementById('accountSelect');
+const saveBtn = document.getElementById('saveBtn');
+const syncBtn = document.getElementById('syncBtn');
+const statusEl = document.getElementById('status');
 
 let mapping = [];
 
-/**
- * Load Monzo/Actual data and render mapping dropdowns.
- * @param {boolean} ready - whether budget is downloaded (enables dropdowns)
- */
-async function loadData(ready = false) {
+/** Poll budget readiness then load data */
+async function init() {
+  // Download budget then load data
+  try {
+    const res = await fetch('/api/budget-status');
+    const { ready } = await res.json();
+    if (!ready) await new Promise(r => setTimeout(r, 1000));
+  } catch {}
+  // Load mapping and accounts
+  await loadData();
+}
+
+/** Load mapping and account options, update UI based on Aviva login state */
+async function loadData() {
   let res;
   try {
     res = await fetch('/api/data');
@@ -31,172 +35,90 @@ async function loadData(ready = false) {
     console.error('Failed to fetch /api/data', err);
     return;
   }
-  if (res.status === 401) {
-    // Only auto-redirect to Monzo auth if a refresh token existed
-    if (hadRefreshToken) {
-      window.location.href = '/auth';
-    }
-    return;
-  }
-  const json = await res.json();
-  const { monoAccounts, pots, accounts, mapping: map, authenticated } = json;
+  const { mapping: map, accounts, aviva } = await res.json();
   mapping = map;
-  const authBtn = document.getElementById('authBtn');
-  if (authenticated) {
-    authBtn.textContent = 'Monzo Authenticated';
-    authBtn.className = 'btn btn-success disabled';
-    authBtn.removeAttribute('href');
-    authBtn.setAttribute('aria-disabled', 'true');
+  // Populate account dropdown
+  accountSelect.innerHTML = '<option value="">-- none --</option>' +
+    accounts.map(a => `<option value="${a.id}"${mapping[0]?.accountId===a.id?' selected':''}>${a.name}</option>`).join('');
+  // Update pension value if available
+  if (aviva.status === 'logged-in') {
+    pensionValueEl.textContent = aviva.value.toFixed(2);
+  }
+  // Update login UI
+  if (aviva.status === 'awaiting-2fa') {
+    twofaSection.style.display = 'block';
+    loginStatus.textContent = 'Enter SMS 2FA code';
+  } else if (aviva.status === 'logged-in') {
+    loginStatus.textContent = 'Logged in';
+  } else if (aviva.status === 'error') {
+    loginStatus.textContent = 'Error: ' + aviva.error;
+  }
+}
+
+// Trigger Aviva login flow
+loginBtn.onclick = async () => {
+  loginStatus.textContent = 'Logging in...';
+  twofaSection.style.display = 'none';
+  await fetch('/api/aviva/login', { method: 'POST' });
+  pollStatus();
+};
+
+// Submit 2FA code
+submit2faBtn.onclick = async () => {
+  const code = document.getElementById('twofaCode').value;
+  await fetch('/api/aviva/2fa', {
+    method: 'POST', headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ code }),
+  });
+  pollStatus();
+};
+
+// Poll login status until logged-in or error
+async function pollStatus() {
+  const { status, error } = await (await fetch('/api/aviva/status')).json();
+  if (status === 'awaiting-2fa') {
+    twofaSection.style.display = 'block';
+    loginStatus.textContent = 'Enter SMS 2FA code';
+  } else if (status === 'logged-in') {
+    loginStatus.textContent = 'Logged in';
+    await loadData();
+  } else if (status === 'error') {
+    loginStatus.textContent = 'Error: ' + error;
   } else {
-    authBtn.textContent = 'Authenticate Monzo';
-    authBtn.className = 'btn btn-secondary';
-    authBtn.setAttribute('href', '/auth');
-    authBtn.removeAttribute('aria-disabled');
+    setTimeout(pollStatus, 1000);
   }
-  const retailAccounts = monoAccounts.filter((a) => a.type?.startsWith('uk_retail'));
-  const accountsBody = document.getElementById('accountsBody');
-  accountsBody.innerHTML = retailAccounts
-    .map((ac) => {
-      const desc = ac.owners.reduce(
-        (d, o) => d.replace(new RegExp(o.user_id, 'g'), o.preferred_name),
-        ac.description || ''
-      );
-      const ownerNames = ac.owners.map((o) => o.preferred_name).join(', ');
-      return (
-        '<tr>' +
-        '<td>' +
-        ac.id +
-        '</td>' +
-        '<td>' +
-        desc +
-        '</td>' +
-        '<td>' +
-        ownerNames +
-        '</td>' +
-        '<td>' +
-        ac.type +
-        '</td>' +
-        '<td>' +
-        (ac.account_number || '') +
-        '</td>' +
-        '<td>' +
-        ac.currency +
-        '</td>' +
-        '</tr>'
-      );
-    })
-    .join('');
-  const tbody = document.getElementById('mappingBody');
-  tbody.innerHTML = pots
-    .map((pot) => {
-      const selected = mapping.find((m) => m.potId === pot.id)?.accountId || '';
-      const options = accounts
-        .map((ac) => {
-          const sel = ac.id === selected ? ' selected' : '';
-          return '<option value="' + ac.id + '"' + sel + '>' + ac.name + '</option>';
-        })
-        .join('');
-      const acct = monoAccounts.find((a) => a.id === pot.current_account_id);
-      const owner = acct ? acct.owners.map((o) => o.preferred_name).join(', ') : '';
-      return (
-        '<tr>' +
-        '<td>' +
-        pot.name +
-        '</td>' +
-        '<td>' +
-        pot.current_account_id +
-        '</td>' +
-        '<td>' +
-        owner +
-        '</td>' +
-        '<td><select data-pot="' +
-        pot.id +
-        '" class="form-select"' +
-        (ready ? '' : ' disabled') +
-        '>' +
-        '<option value="">-- none --</option>' +
-        options +
-        '</select></td>' +
-        '</tr>'
-      );
-    })
-    .join('');
 }
 
-/**
- * Poll server until budgetReady, then load data
- */
-async function waitForBudgetThenLoad() {
-  /* eslint-disable no-constant-condition */
-  const statusEl = document.getElementById('budgetStatus');
-  while (true) {
-    try {
-      const res = await fetch('/api/budget-status');
-      const { ready } = await res.json();
-      if (ready) {
-        statusEl.textContent = 'Budget downloaded';
-        statusEl.className = 'badge bg-success';
-        break;
-      } else {
-        statusEl.textContent = 'Budget downloading';
-        statusEl.className = 'badge bg-info';
-      }
-    } catch (err) {
-      console.error('Error polling budget-status', err);
-      statusEl.textContent = 'Budget downloading';
-      statusEl.className = 'badge bg-info';
-    }
-    await new Promise((r) => setTimeout(r, 1000));
-  }
-  loadData(true);
-}
-
-// Initial data load (e.g. Monzo auth status), then poll budget until ready
-// Attach action handlers
-document.getElementById('saveBtn').onclick = async () => {
-  const statusEl = document.getElementById('status');
-  statusEl.textContent = 'Saving mappings...';
-  try {
-    const newMap = [];
-    document.querySelectorAll('select[data-pot]').forEach((sel) => {
-      const potId = sel.getAttribute('data-pot');
-      const accountId = sel.value;
-      const existing = mapping.find((m) => m.potId === potId);
-      newMap.push({ potId, accountId, lastBalance: existing?.lastBalance || 0 });
-    });
-    const res = await fetch('/api/mappings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newMap),
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.error || 'Failed to save mappings');
-    }
-    statusEl.textContent = 'Mappings saved.';
-    await loadData(true);
-  } catch (err) {
-    statusEl.textContent = 'Error saving mappings: ' + err.message;
+// Save mapping
+saveBtn.onclick = async () => {
+  statusEl.textContent = 'Saving mapping...';
+  const newMap = [ { accountId: accountSelect.value, lastBalance: mapping[0]?.lastBalance || 0 } ];
+  const res = await fetch('/api/mappings', {
+    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(newMap),
+  });
+  if (res.ok) {
+    statusEl.textContent = 'Mapping saved.';
+  } else {
+    statusEl.textContent = 'Error saving mapping';
   }
 };
-const syncBtn = document.getElementById('syncBtn');
+
+// Sync now
 syncBtn.onclick = async () => {
-  const statusEl = document.getElementById('status');
   syncBtn.disabled = true;
   statusEl.textContent = 'Syncing...';
   try {
     const res = await fetch('/api/sync', { method: 'POST' });
-    const json = await res.json();
-    if (!res.ok) {
-      throw new Error(json.error || 'Failed to sync');
-    }
-    statusEl.textContent = json.message || 'Synced ' + json.count + ' pot(s)';
+    const { count } = await res.json();
+    statusEl.textContent = `Synced ${count} transaction(s)`;
   } catch (err) {
     statusEl.textContent = 'Error syncing: ' + err.message;
   } finally {
     syncBtn.disabled = false;
   }
 };
-// Initial data load (e.g. Monzo auth status), then poll budget until ready
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', init);
 loadData(false);
 waitForBudgetThenLoad();

@@ -2,13 +2,6 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const api = require('@actual-app/api');
-const monzo = require('./monzo-client');
-const logger = require('./logger');
-
-async function setupMonzo() {
-  logger.info('Initializing Monzo client...');
-  await monzo.init();
-}
 
 async function openBudget() {
   const url = process.env.ACTUAL_SERVER_URL;
@@ -57,5 +50,4 @@ async function closeBudget() {
     process.exit(1);
   }
 }
-
-module.exports = { setupMonzo, openBudget, closeBudget };
+module.exports = { openBudget, closeBudget };

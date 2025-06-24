@@ -7,7 +7,6 @@ npm-debug.log*
 
 # Build output and runtime caches
 coverage
-monzo_cache
 budget
 data
 

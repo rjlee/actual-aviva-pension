@@ -1,10 +1,22 @@
 FROM node:20-bullseye-slim AS builder
 
+# Set working directory
 WORKDIR /app
+
+# Install runtime dependencies for Puppeteer (headless Chrome)
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates fonts-liberation libasound2 libatk1.0-0 libc6 libcairo2 libdbus-1-3 libexpat1 \
+       libfontconfig1 libgcc1 libgconf-2-4 libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libstdc++6 \
+       libx11-6 libx11-xcb1 libxcb1 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxrandr2 libxrender1 libxss1 libxtst6 wget \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install build dependencies for native modules (if any)
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3 build-essential \
+    # Puppeteer dependencies for headless Chrome
+    ca-certificates fonts-liberation libasound2 libatk1.0-0 libc6 libcairo2 libdbus-1-3 libexpat1 libfontconfig1 libgcc1 libgconf-2-4 \
+    libgdk-pixbuf2.0-0 libglib2.0-0 libgtk-3-0 libnspr4 libnss3 libpango-1.0-0 libstdc++6 libx11-6 libx11-xcb1 libxcb1 \
+    libxcomposite1 libxdamage1 libxext6 libxfixes3 libxrandr2 libxrender1 libxss1 libxtst6 wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Install JS dependencies (omit dev dependencies for a lean build)

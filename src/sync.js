@@ -2,8 +2,8 @@ const fs = require('fs');
 const path = require('path');
 const logger = require('./logger');
 const config = require('./config');
-const monzo = require('./monzo-client');
-const { setupMonzo, openBudget, closeBudget } = require('./utils');
+const { getPensionValue } = require('./aviva-client');
+const { openBudget, closeBudget } = require('./utils');
 const api = require('@actual-app/api');
 // Use addTransactions for raw imports (with imported_payee)
 
@@ -35,8 +35,6 @@ async function runSync({ verbose = false, useLogger = false } = {}) {
   }
   if (verbose) log.debug({ mappingPath, count: mapping.length }, 'Loaded mapping entries');
 
-  log.info('Initializing Monzo client');
-  await setupMonzo();
 
   // Open Actual Budget
   try {
@@ -53,27 +51,21 @@ async function runSync({ verbose = false, useLogger = false } = {}) {
     const accounts = await api.getAccounts();
     const accountIds = accounts.map((a) => a.id);
 
-    // Fetch Monzo pots across all accounts
-    const monoAccounts = await monzo.listAccounts();
-    let pots = [];
-    for (const acct of monoAccounts) {
-      const acctPots = await monzo.listPots(acct.id);
-      pots = pots.concat(acctPots);
-    }
-
-    // Process each mapped pot
+    // Fetch current pension value from Aviva
+    const current = await getPensionValue({
+      email: process.env.AVIVA_EMAIL,
+      password: process.env.AVIVA_PASSWORD,
+      cookiesPath: process.env.AVIVA_COOKIES_FILE,
+      timeout: parseInt(process.env.AVIVA_2FA_TIMEOUT, 10) || 60,
+    });
+    // Process each mapped entry
     for (const entry of mapping) {
-      const pot = pots.find((p) => p.id === entry.potId);
-      if (!pot) {
-        log.warn({ potId: entry.potId }, 'Pot not found; skipping');
-        continue;
-      }
       const acctId = entry.accountId;
       if (!accountIds.includes(acctId)) {
         log.warn({ accountId: acctId }, 'Actual account not found; skipping');
         continue;
       }
-      // Fetch the current balance from Actual Budget to guard against stale mapping.json
+      // Fetch current Actual budget balance or fallback to lastBalance
       let last = 0;
       try {
         last = await api.getAccountBalance(acctId, new Date());
@@ -84,14 +76,11 @@ async function runSync({ verbose = false, useLogger = false } = {}) {
         );
         last = typeof entry.lastBalance === 'number' ? entry.lastBalance : 0;
       }
-      const current = pot.balance;
       const delta = current - last;
-      if (delta === 0) {
-        continue;
-      }
-      log.info({ pot: pot.name, delta }, 'Syncing pot change');
-      // Create or find a payee for our imported transactions, then import
-      const PAYEE_NAME = 'actual-monzo-pots';
+      if (delta === 0) continue;
+      log.info({ delta }, 'Syncing pension change');
+      // Create or find a payee for imported transactions
+      const PAYEE_NAME = 'actual-aviva-pension';
       let payees = [];
       try {
         payees = await api.getPayees();
@@ -107,7 +96,7 @@ async function runSync({ verbose = false, useLogger = false } = {}) {
         }
       }
       const tx = {
-        id: `${pot.id}-${Date.now()}`,
+        id: `aviva-${Date.now()}`,
         date: new Date(),
         amount: delta,
         payee: payeeId || PAYEE_NAME,
