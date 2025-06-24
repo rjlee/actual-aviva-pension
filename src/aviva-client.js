@@ -52,7 +52,11 @@ async function getPensionValue({ email, password, cookiesPath, timeout = 60, deb
     await page.goto('https://www.direct.aviva.co.uk/MyAccount/login', { waitUntil: 'networkidle2' });
     // Accept cookies banner if present
     try {
-      await page.click('button:has-text("Accept all cookies")');
+      // Puppeteer XPath selector for a button containing the exact banner text
+      const [acceptBtn] = await page.$x(
+        "//button[contains(normalize-space(.), 'Accept all cookies')]"
+      );
+      if (acceptBtn) await acceptBtn.click();
     } catch (_err) {
       /* ignore cookie banner errors */
     }
