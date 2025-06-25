@@ -3,7 +3,7 @@ version: '3.8'
 services:
   aviva-pension-sync:
     # Use the published GHCR image by default; comment out 'image' and uncomment 'build' to rebuild locally
-    image: ghcr.io/<owner>/actual-aviva-pension:latest
+    image: ghcr.io/rjlee/actual-aviva-pension:latest
     # build: .
     container_name: aviva-pension-sync
     env_file:
