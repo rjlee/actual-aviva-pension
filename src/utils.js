@@ -13,7 +13,7 @@ async function openBudget() {
       'Please set ACTUAL_SERVER_URL, ACTUAL_PASSWORD, and ACTUAL_BUDGET_ID environment variables'
     );
   }
-  const dataDir = process.env.BUDGET_CACHE_DIR || './budget';
+  const dataDir = process.env.BUDGET_CACHE_DIR || './data/budget';
 
   // Clean up old budget cache entries, preserving .gitkeep
   if (fs.existsSync(dataDir)) {
