@@ -35,8 +35,17 @@ async function getPensionValue({ email, password, cookiesPath, timeout = 60, deb
   let browser;
   let page;
   try {
-    // Launch Chrome: headful if debug, else headless with sandbox disabled
-    browser = await puppeteer.launch({ headless: !debug });
+    // Launch Chrome: headful if debug, else headless
+    const launchOptions = { headless: !debug };
+    // If running in Docker, disable sandbox (many containers disallow Chrome sandbox)
+    if (process.env.CHROME_DISABLE_SANDBOX) {
+      launchOptions.args = ['--no-sandbox', '--disable-setuid-sandbox'];
+    }
+    // Allow overriding Chromium executable (e.g. system Chromium in Docker)
+    if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+      launchOptions.executablePath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    }
+    browser = await puppeteer.launch(launchOptions);
     page = await browser.newPage();
     // Emulate mobile Safari user-agent for Aviva scraper
     await page.setUserAgent(
