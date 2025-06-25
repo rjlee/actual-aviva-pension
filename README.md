@@ -41,8 +41,9 @@ SSL_CERT=/path/to/fullchain.pem
 
 3. Build and run with Docker Compose:
 
-   By default the Docker image includes the necessary Chrome libraries and sets `CHROME_DISABLE_SANDBOX=true`
-   so Puppeteer can run headlessly inside the container.
+   By default the Docker image installs Debian’s `chromium` package (so Puppeteer uses system Chromium
+   instead of downloading its own) and sets `CHROME_DISABLE_SANDBOX=true` so Puppeteer can run headlessly
+   inside the container.
 
 ```bash
 docker-compose up --build -d
