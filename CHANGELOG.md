@@ -1,3 +1,19 @@
+# 1.0.0 (2025-06-25)
+
+
+### Bug Fixes
+
+* address lint errors and restore test functionality ([9167a83](https://github.com/rjlee/actual-aviva-pension/commit/9167a831a5c0eabecc06a8717c02dda550a880fa))
+* correct indentation in sync.js and update README for clarity ([474dc86](https://github.com/rjlee/actual-aviva-pension/commit/474dc86136e72560781e0511ad89394bbeaa4ced))
+* use XPath to click cookie banner for Puppeteer ([4a2c886](https://github.com/rjlee/actual-aviva-pension/commit/4a2c88691525190c56e3cdaf6a3ae45efa2e89c5))
+
+
+### Features
+
+* add --debug flag for headful Puppeteer mode ([d1315fe](https://github.com/rjlee/actual-aviva-pension/commit/d1315fe2d4db28c1078d573b2c228812dd2bca4d))
+* Implement 2FA handling and improve authentication flow ([b3e7b6f](https://github.com/rjlee/actual-aviva-pension/commit/b3e7b6f7f19ab558a642864c81590c1730e4fafc))
+* implement Aviva client, update sync and web UI flows ([1a1d350](https://github.com/rjlee/actual-aviva-pension/commit/1a1d350538419c3c7bc180b8263d80d52aa3f0d6))
+
 # [1.13.0](https://github.com/rjlee/actual-monzo-pots/compare/v1.12.0...v1.13.0) (2025-06-23)
 
 
