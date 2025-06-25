@@ -1,6 +1,6 @@
 {
   "name": "actual-aviva-pension",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Sync Aviva pension value to Actual Budget accounts",
   "main": "src/index.js",
   "scripts": {

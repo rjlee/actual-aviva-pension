@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/rjlee/actual-aviva-pension/compare/v1.0.1...v1.1.0) (2025-06-25)
+
+
+### Bug Fixes
+
+* remove unnecessary blank line in README.md ([b0cccdf](https://github.com/rjlee/actual-aviva-pension/commit/b0cccdf8dc48f2dd71d798396172f412d8755e0f))
+
+
+### Features
+
+* enhance Docker setup with Chrome dependencies and update Puppeteer launch options ([0a149e0](https://github.com/rjlee/actual-aviva-pension/commit/0a149e001b2bc7f667ea2320990b2284cc5e2682))
+
 ## [1.0.1](https://github.com/rjlee/actual-aviva-pension/compare/v1.0.0...v1.0.1) (2025-06-25)
 
 
