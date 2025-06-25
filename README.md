@@ -39,7 +39,6 @@ SSL_CERT=/path/to/fullchain.pem
 
 2. Copy `config.example.yaml` to `config.yaml` if you need to override defaults (schedule, HTTP_PORT, MAPPING_FILE).
 
-
 3. Build and run with Docker Compose:
 
    By default the Docker image includes the necessary Chrome libraries and sets `CHROME_DISABLE_SANDBOX=true`
