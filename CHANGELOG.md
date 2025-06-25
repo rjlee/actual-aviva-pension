@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/rjlee/actual-aviva-pension/compare/v1.0.0...v1.0.1) (2025-06-25)
+
+
+### Bug Fixes
+
+* update Docker image reference to use correct owner ([211d62f](https://github.com/rjlee/actual-aviva-pension/commit/211d62f5ef7727a322304682525f7737a42f77f0))
+
 # 1.0.0 (2025-06-25)
 
 
