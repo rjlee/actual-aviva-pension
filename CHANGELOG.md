@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/rjlee/actual-aviva-pension/compare/v1.1.0...v1.2.0) (2025-06-25)
+
+
+### Features
+
+* update Dockerfile to use system Chromium for Puppeteer and enhance README instructions ([522d7bc](https://github.com/rjlee/actual-aviva-pension/commit/522d7bc33dd3ca36acd8d7adb46ac2f155f31190))
+
 # [1.1.0](https://github.com/rjlee/actual-aviva-pension/compare/v1.0.1...v1.1.0) (2025-06-25)
 
 
