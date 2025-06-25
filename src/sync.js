@@ -99,7 +99,7 @@ async function runSync({ verbose = false, useLogger = false, debug = false } = {
         }
       }
       const tx = {
-      id: `aviva-${acctId}-${Date.now()}`,
+        id: `aviva-${acctId}-${Date.now()}`,
         date: new Date(),
         // Convert pounds delta to minor currency units (pence)
         amount: Math.round(delta * 100),

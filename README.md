@@ -61,7 +61,7 @@ npm run daemon -- --ui [--verbose]
 
 ## Security Considerations
 
-_Web UI security:_ the Web UI displays your Actual Budget account details.
+_Web UI security:_
 
 - **Session-based UI authentication** uses a signed session cookie (`cookie-session`) secured by `SESSION_SECRET`.
   To disable login entirely (open access), set `UI_AUTH_ENABLED=false`.
