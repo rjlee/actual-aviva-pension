@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/rjlee/actual-aviva-pension/compare/v1.2.0...v1.2.1) (2025-06-25)
+
+
+### Bug Fixes
+
+* update budget cache directory path in configuration and utils ([f48dda7](https://github.com/rjlee/actual-aviva-pension/commit/f48dda73751a5e65b0134cd2f896ea5193c245d1))
+
 # [1.2.0](https://github.com/rjlee/actual-aviva-pension/compare/v1.1.0...v1.2.0) (2025-06-25)
 
 
