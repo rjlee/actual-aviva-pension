@@ -2,6 +2,11 @@
 require('./suppress');
 require('dotenv').config();
 
+// Prevent daemon from crashing on unhandled promise rejections (e.g. budget download errors)
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason);
+});
+
 const config = require('./config');
 const { runSync } = require('./sync');
 const { runDaemon } = require('./daemon');

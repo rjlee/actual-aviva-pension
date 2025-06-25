@@ -58,8 +58,7 @@ async function runDaemon({ verbose, ui, httpPort, debug }) {
       logger.error({ err }, 'Web UI server failed');
     });
   }
-  // Schedule periodic sync jobs
-  // Use module.exports so jest.spyOn on scheduleSync is applied to this call
+  // Schedule periodic sync jobs; include debug flag so screenshots on errors can occur
   module.exports.scheduleSync(verbose);
 }
 

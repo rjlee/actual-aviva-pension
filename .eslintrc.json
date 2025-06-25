@@ -12,7 +12,7 @@
   "overrides": [
     {
       "files": ["tests/**/*.js"],
-      "env": { "jest": true }
+      "env": { "jest": true, "browser": true }
     }
   ]
 }

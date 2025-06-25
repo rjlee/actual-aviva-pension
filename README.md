@@ -53,7 +53,6 @@ npm run daemon -- --ui [--verbose]
 ```
 
 4. Open your browser to <http://localhost:3000> (or configured `HTTP_PORT`) and:
-
    - **Log in to Aviva**: click **Login Aviva**, then enter your Aviva credentials.
    - **Enter SMS code**: when prompted, enter the SMS code for 2FA.
    - **Save mapping**: select your Actual Budget account to sync your pension value to, then click **Save Mapping**.
@@ -74,6 +73,7 @@ _Web UI security:_ the Web UI displays your Actual Budget account details.
 SSL_KEY=/path/to/privkey.pem
 SSL_CERT=/path/to/fullchain.pem
 ```
+
 - **Disable Web UI:** omit the `--ui` flag or remove the HTTP_PORT setting to run one-shot sync (`npm run sync`).
 
 ## Configuration

@@ -8,9 +8,9 @@ const api = require('@actual-app/api');
 // Use addTransactions for raw imports (with imported_payee)
 
 /**
- * Sync Monzo pot balances to Actual Budget accounts.
- * @param {{verbose?: boolean, useLogger?: boolean}} options
- * @returns {Promise<number>} Number of pot syncs applied
+ * Sync Aviva pension value to Actual Budget accounts.
+ * @param {{verbose?: boolean, useLogger?: boolean, debug?: boolean}} options
+ * @returns {Promise<number>} Number of transactions applied
  */
 async function runSync({ verbose = false, useLogger = false, debug = false } = {}) {
   const log =
@@ -34,7 +34,6 @@ async function runSync({ verbose = false, useLogger = false, debug = false } = {
     mapping = [];
   }
   if (verbose) log.debug({ mappingPath, count: mapping.length }, 'Loaded mapping entries');
-
 
   // Open Actual Budget
   try {
@@ -66,10 +65,11 @@ async function runSync({ verbose = false, useLogger = false, debug = false } = {
         log.warn({ accountId: acctId }, 'Actual account not found; skipping');
         continue;
       }
-      // Fetch current Actual budget balance or fallback to lastBalance
+      // Fetch current Actual budget balance (minor units) and convert to major units, or fallback to lastBalance
       let last = 0;
       try {
-        last = await api.getAccountBalance(acctId, new Date());
+        const lastMinor = await api.getAccountBalance(acctId, new Date());
+        last = lastMinor / 100;
       } catch (err) {
         log.warn(
           { accountId: acctId, err },
@@ -99,9 +99,10 @@ async function runSync({ verbose = false, useLogger = false, debug = false } = {
         }
       }
       const tx = {
-        id: `aviva-${Date.now()}`,
+      id: `aviva-${acctId}-${Date.now()}`,
         date: new Date(),
-        amount: delta,
+        // Convert pounds delta to minor currency units (pence)
+        amount: Math.round(delta * 100),
         payee: payeeId || PAYEE_NAME,
         imported_payee: PAYEE_NAME,
       };

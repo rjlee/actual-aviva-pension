@@ -15,14 +15,13 @@ const { runSync } = require('./sync');
 const asyncHandler = (fn) => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
 // Generate the HTML for the UI page via EJS template
-// Generate the HTML for the UI page via EJS template
 // uiAuthEnabled toggles display of the logout button in the UI
-function uiPageHtml(hadRefreshToken, refreshError, uiAuthEnabled) {
+function uiPageHtml(hadRefreshToken, refreshError, uiAuthEnabled, hasCookie) {
   const templatePath = path.join(__dirname, 'views', 'index.ejs');
   const template = fs.readFileSync(templatePath, 'utf8');
   return ejs.render(
     template,
-    { hadRefreshToken, refreshError, uiAuthEnabled },
+    { hadRefreshToken, refreshError, uiAuthEnabled, hasCookie },
     { filename: templatePath }
   );
 }
@@ -34,6 +33,9 @@ async function startWebUi(httpPort, verbose, debug) {
   // Aviva-client initial state: no pre-refresh; serverState will track login status
   let hadRefreshToken = false;
   let refreshError = null;
+  // Detect existing Aviva session cookies (for button state)
+  const cookieFile = process.env.AVIVA_COOKIES_FILE;
+  const hasCookie = Boolean(cookieFile && fs.existsSync(cookieFile));
   // Validate that no deprecated Basic Auth settings are present (env or config)
   const deprecatedUser = process.env.UI_USER || config.UI_USER;
   const deprecatedPass = process.env.UI_PASSWORD || config.UI_PASSWORD;
@@ -44,9 +46,7 @@ async function startWebUi(httpPort, verbose, debug) {
     );
     process.exit(1);
   }
-  // Kick off budget download in background; UI will poll for readiness
   let budgetReady = false;
-  // Kick off budget download in background; wrap in Promise.resolve to catch sync throws
   Promise.resolve(openBudget())
     .then(() => {
       budgetReady = true;
@@ -134,7 +134,7 @@ async function startWebUi(httpPort, verbose, debug) {
     logger.info(meta, 'HTTP request');
     next();
   });
-  const mappingFile = process.env.MAPPING_FILE || config.MAPPING_FILE || './mapping.json';
+  const mappingFile = process.env.MAPPING_FILE || config.MAPPING_FILE || './data/mapping.json';
 
   // Aviva login endpoints
   app.post(
@@ -159,7 +159,9 @@ async function startWebUi(httpPort, verbose, debug) {
     res.json(serverState);
   });
 
-  app.get('/', (_req, res) => res.send(uiPageHtml(hadRefreshToken, refreshError, UI_AUTH_ENABLED)));
+  app.get('/', (_req, res) =>
+    res.send(uiPageHtml(hadRefreshToken, refreshError, UI_AUTH_ENABLED, hasCookie))
+  );
 
   app.get(
     '/api/data',
@@ -176,7 +178,13 @@ async function startWebUi(httpPort, verbose, debug) {
       try {
         accountsList = await api.getAccounts();
       } catch (err) {
-        logger.error({ err }, 'Failed to fetch Actual Budget accounts');
+        // If the budget isn’t loaded yet, skip accounts fetch; otherwise log error
+        if (err && err.message === 'No budget file is open') {
+          logger.info('Budget not yet loaded; skipping accounts fetch');
+        } else {
+          logger.error({ err }, 'Failed to fetch Actual Budget accounts');
+        }
+        accountsList = [];
       }
       // Provide Aviva login state for UI
       return res.json({ mapping, accounts: accountsList, aviva: serverState });
@@ -189,6 +197,8 @@ async function startWebUi(httpPort, verbose, debug) {
   });
 
   app.post('/api/mappings', (req, res) => {
+    // ensure mapping directory exists
+    fs.mkdirSync(path.dirname(mappingFile), { recursive: true });
     fs.writeFileSync(mappingFile, JSON.stringify(req.body, null, 2));
     res.json({ success: true });
   });
@@ -218,4 +228,4 @@ async function startWebUi(httpPort, verbose, debug) {
   return server;
 }
 
-module.exports = { startWebUi };
+module.exports = { startWebUi, uiPageHtml };

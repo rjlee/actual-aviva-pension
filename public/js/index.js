@@ -2,28 +2,39 @@
 
 // UI elements
 const loginBtn = document.getElementById('loginBtn');
+const authStatusEl = document.getElementById('authStatus');
 const twofaSection = document.getElementById('twofaSection');
 const submit2faBtn = document.getElementById('submit2faBtn');
 const loginStatus = document.getElementById('loginStatus');
-const pensionValueEl = document.getElementById('pensionValue');
 const accountSelect = document.getElementById('accountSelect');
 const saveBtn = document.getElementById('saveBtn');
 const syncBtn = document.getElementById('syncBtn');
 const statusEl = document.getElementById('status');
 
 let mapping = [];
+// track whether we've shown the 2FA input to user
+let hasPrompted2fa = false;
 
 /** Poll budget readiness then load data */
 async function init() {
-  // Download budget then load data
-  try {
-    const res = await fetch('/api/budget-status');
-    const { ready } = await res.json();
-    if (!ready) await new Promise(r => setTimeout(r, 1000));
-  } catch {
-    /* ignore budget status errors */
+  // Poll budget-status until ready, updating badge text
+  const badgeEl = document.getElementById('budgetStatus');
+  let ready = false;
+  while (!ready) {
+    try {
+      const res = await fetch('/api/budget-status');
+      const json = await res.json();
+      ready = json.ready;
+    } catch {
+      /* ignore errors */
+    }
+    badgeEl.textContent = ready ? 'Budget downloaded' : 'Budget downloading';
+    if (!ready) {
+      // wait before retrying
+      await new Promise((r) => setTimeout(r, 1000));
+    }
   }
-  // Load mapping and accounts
+  // Once ready, fetch mapping and account data
   await loadData();
 }
 
@@ -39,18 +50,17 @@ async function loadData() {
   const { mapping: map, accounts, aviva } = await res.json();
   mapping = map;
   // Populate account dropdown
-  accountSelect.innerHTML = '<option value="">-- none --</option>' +
-    accounts.map(a => `<option value="${a.id}"${mapping[0]?.accountId===a.id?' selected':''}>${a.name}</option>`).join('');
-  // Update pension value if available
-  if (aviva.status === 'logged-in') {
-    pensionValueEl.textContent = aviva.value.toFixed(2);
-  }
-  // Update login UI
+  accountSelect.innerHTML =
+    '<option value="">-- none --</option>' +
+    accounts
+      .map(
+        (a) =>
+          `<option value="${a.id}"${mapping[0]?.accountId === a.id ? ' selected' : ''}>${a.name}</option>`
+      )
+      .join('');
+  // Update login UI: only show errors or 2FA prompt, not 'Logged in'
   if (aviva.status === 'awaiting-2fa') {
     twofaSection.style.display = 'block';
-    loginStatus.textContent = 'Enter SMS 2FA code';
-  } else if (aviva.status === 'logged-in') {
-    loginStatus.textContent = 'Logged in';
   } else if (aviva.status === 'error') {
     loginStatus.textContent = 'Error: ' + aviva.error;
   }
@@ -58,8 +68,9 @@ async function loadData() {
 
 // Trigger Aviva login flow
 loginBtn.onclick = async () => {
-  loginStatus.textContent = 'Logging in...';
+  authStatusEl.textContent = 'Authenticating...';
   twofaSection.style.display = 'none';
+  hasPrompted2fa = false;
   await fetch('/api/aviva/login', { method: 'POST' });
   pollStatus();
 };
@@ -68,34 +79,49 @@ loginBtn.onclick = async () => {
 submit2faBtn.onclick = async () => {
   const code = document.getElementById('twofaCode').value;
   await fetch('/api/aviva/2fa', {
-    method: 'POST', headers: {'Content-Type':'application/json'},
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ code }),
   });
+  // hide 2FA entry and clear any prompt after submission
+  twofaSection.style.display = 'none';
+  loginStatus.textContent = '';
   pollStatus();
 };
 
 // Poll login status until logged-in or error
 async function pollStatus() {
-  const { status, error } = await (await fetch('/api/aviva/status')).json();
+  const { status } = await (await fetch('/api/aviva/status')).json();
   if (status === 'awaiting-2fa') {
-    twofaSection.style.display = 'block';
-    loginStatus.textContent = 'Enter SMS 2FA code';
-  } else if (status === 'logged-in') {
-    loginStatus.textContent = 'Logged in';
-    await loadData();
-  } else if (status === 'error') {
-    loginStatus.textContent = 'Error: ' + error;
-  } else {
+    if (!hasPrompted2fa) {
+      twofaSection.style.display = 'block';
+      hasPrompted2fa = true;
+    }
+    authStatusEl.textContent = '';
     setTimeout(pollStatus, 1000);
+    return;
   }
+  if (status === 'logged-in') {
+    authStatusEl.textContent = 'Successful';
+    await loadData();
+    return;
+  }
+  if (status === 'error') {
+    authStatusEl.textContent = 'Unsuccessful';
+    return;
+  }
+  // still pending (idle or other): retry polling
+  setTimeout(pollStatus, 1000);
 }
 
 // Save mapping
 saveBtn.onclick = async () => {
   statusEl.textContent = 'Saving mapping...';
-  const newMap = [ { accountId: accountSelect.value, lastBalance: mapping[0]?.lastBalance || 0 } ];
+  const newMap = [{ accountId: accountSelect.value, lastBalance: mapping[0]?.lastBalance || 0 }];
   const res = await fetch('/api/mappings', {
-    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(newMap),
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(newMap),
   });
   if (res.ok) {
     statusEl.textContent = 'Mapping saved.';
