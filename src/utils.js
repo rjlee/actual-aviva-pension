@@ -8,10 +8,10 @@ let hasDownloadedBudget = false;
 async function openBudget() {
   const url = process.env.ACTUAL_SERVER_URL;
   const password = process.env.ACTUAL_PASSWORD;
-  const budgetId = process.env.ACTUAL_BUDGET_ID;
-  if (!url || !password || !budgetId) {
+  const syncId = process.env.ACTUAL_SYNC_ID;
+  if (!url || !password || !syncId) {
     throw new Error(
-      'Please set ACTUAL_SERVER_URL, ACTUAL_PASSWORD, and ACTUAL_BUDGET_ID environment variables'
+      'Please set ACTUAL_SERVER_URL, ACTUAL_PASSWORD, and ACTUAL_SYNC_ID environment variables'
     );
   }
   const dataDir = process.env.BUDGET_CACHE_DIR || './data/budget';
@@ -27,7 +27,7 @@ async function openBudget() {
   if (!hasDownloadedBudget) {
     logger.info('Downloading budget (no backup)...');
     try {
-      await api.downloadBudget(process.env.ACTUAL_BUDGET_ID, opts);
+      await api.downloadBudget(syncId, opts);
       logger.info('Budget downloaded');
       hasDownloadedBudget = true;
     } catch (err) {

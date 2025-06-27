@@ -9,7 +9,7 @@ describe('openBudget', () => {
   beforeEach(() => {
     delete process.env.ACTUAL_SERVER_URL;
     delete process.env.ACTUAL_PASSWORD;
-    delete process.env.ACTUAL_BUDGET_ID;
+    delete process.env.ACTUAL_SYNC_ID;
     delete process.env.BUDGET_CACHE_DIR;
     jest.resetAllMocks();
     if (fs.existsSync(testDir)) fs.rmSync(testDir, { recursive: true, force: true });
@@ -17,7 +17,7 @@ describe('openBudget', () => {
   afterEach(() => {
     delete process.env.ACTUAL_SERVER_URL;
     delete process.env.ACTUAL_PASSWORD;
-    delete process.env.ACTUAL_BUDGET_ID;
+    delete process.env.ACTUAL_SYNC_ID;
     delete process.env.BUDGET_CACHE_DIR;
     jest.resetAllMocks();
     if (fs.existsSync(testDir)) fs.rmSync(testDir, { recursive: true, force: true });
@@ -25,14 +25,14 @@ describe('openBudget', () => {
 
   it('throws error when required env vars are missing', async () => {
     await expect(openBudget()).rejects.toThrow(
-      'Please set ACTUAL_SERVER_URL, ACTUAL_PASSWORD, and ACTUAL_BUDGET_ID environment variables'
+      'Please set ACTUAL_SERVER_URL, ACTUAL_PASSWORD, and ACTUAL_SYNC_ID environment variables'
     );
   });
 
   it('initializes budget and downloads via API', async () => {
     process.env.ACTUAL_SERVER_URL = 'http://x';
     process.env.ACTUAL_PASSWORD = 'pw';
-    process.env.ACTUAL_BUDGET_ID = 'bid';
+    process.env.ACTUAL_SYNC_ID = 'bid';
     process.env.BUDGET_CACHE_DIR = testDir;
 
     api.init.mockResolvedValue();
