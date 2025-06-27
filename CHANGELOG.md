@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/rjlee/actual-aviva-pension/compare/v1.3.0...v1.3.1) (2025-06-27)
+
+
+### Bug Fixes
+
+* update environment variable names from ACTUAL_BUDGET_ID to ACTUAL_SYNC_ID in configuration and tests ([e91f4a8](https://github.com/rjlee/actual-aviva-pension/commit/e91f4a82e02c2bf0f9830d0ab7449b8fa8db0a2f))
+
 # [1.3.0](https://github.com/rjlee/actual-aviva-pension/compare/v1.2.1...v1.3.0) (2025-06-27)
 
 
