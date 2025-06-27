@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/rjlee/actual-aviva-pension/compare/v1.2.1...v1.3.0) (2025-06-27)
+
+
+### Features
+
+* enhance budget syncing and error handling in sync and utils modules ([07a0621](https://github.com/rjlee/actual-aviva-pension/commit/07a06211cb5c4d70c695e9917b4333c018ac8369))
+
 ## [1.2.1](https://github.com/rjlee/actual-aviva-pension/compare/v1.2.0...v1.2.1) (2025-06-25)
 
 
