@@ -159,8 +159,16 @@ async function startWebUi(httpPort, verbose, debug) {
     res.json(serverState);
   });
 
-  app.get('/', (_req, res) =>
-    res.send(uiPageHtml(hadRefreshToken, refreshError, UI_AUTH_ENABLED, hasCookie))
+  app.get(
+    '/',
+    asyncHandler(async (_req, res) => {
+      try {
+        await openBudget();
+      } catch (err) {
+        logger.error({ err }, 'Budget download/sync on page load failed');
+      }
+      res.send(uiPageHtml(hadRefreshToken, refreshError, UI_AUTH_ENABLED, hasCookie));
+    })
   );
 
   app.get(
@@ -172,6 +180,12 @@ async function startWebUi(httpPort, verbose, debug) {
         mapping = JSON.parse(fs.readFileSync(mappingFile, 'utf8'));
       } catch (_) {
         // no mapping file or invalid JSON
+      }
+      // Sync budget before fetching accounts; ignore sync errors
+      try {
+        await api.sync();
+      } catch (err) {
+        logger.error({ err }, 'Failed to sync budget');
       }
       // Fetch Actual Budget accounts; fallback to empty on error
       let accountsList = [];

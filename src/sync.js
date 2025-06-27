@@ -44,6 +44,13 @@ async function runSync({ verbose = false, useLogger = false, debug = false } = {
     return 0;
   }
 
+  try {
+    log.info('Syncing budget before operations');
+    await api.sync();
+  } catch {
+    /* ignore sync errors */
+  }
+
   let applied = 0;
   try {
     // Fetch available Actual accounts
@@ -123,6 +130,13 @@ async function runSync({ verbose = false, useLogger = false, debug = false } = {
       log.error({ err, mappingPath }, 'Failed to save mapping file atomically');
     }
     log.info({ applied }, 'Completed pot sync');
+    try {
+      log.info('Syncing budget after pension sync');
+      await api.sync();
+      log.info('Budget sync complete');
+    } catch (err) {
+      log.warn({ err }, 'Budget sync after pension sync failed');
+    }
   } catch (err) {
     log.error({ err }, 'Error during sync');
   } finally {

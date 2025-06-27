@@ -1,8 +1,9 @@
 require('dotenv').config();
 const fs = require('fs');
-const path = require('path');
 const api = require('@actual-app/api');
 const logger = require('./logger');
+
+let hasDownloadedBudget = false;
 
 async function openBudget() {
   const url = process.env.ACTUAL_SERVER_URL;
@@ -15,32 +16,37 @@ async function openBudget() {
   }
   const dataDir = process.env.BUDGET_CACHE_DIR || './data/budget';
 
-  // Clean up old budget cache entries, preserving .gitkeep
-  if (fs.existsSync(dataDir)) {
-    for (const entry of fs.readdirSync(dataDir)) {
-      if (entry === '.gitkeep') continue;
-      try {
-        fs.rmSync(path.join(dataDir, entry), { recursive: true, force: true });
-      } catch {
-        /* ignore cleanup errors */
-      }
-    }
-  } else {
-    fs.mkdirSync(dataDir, { recursive: true });
-  }
+  fs.mkdirSync(dataDir, { recursive: true });
 
   logger.info('Connecting to Actual API...');
   await api.init({ dataDir, serverURL: url, password });
 
-  logger.info('Downloading budget (no backup)...');
   const opts = {};
   const budgetPassword = process.env.ACTUAL_BUDGET_ENCRYPTION_PASSWORD;
   if (budgetPassword) opts.password = budgetPassword;
-  await api.downloadBudget(process.env.ACTUAL_BUDGET_ID, opts);
-  logger.info('Budget downloaded');
+  if (!hasDownloadedBudget) {
+    logger.info('Downloading budget (no backup)...');
+    try {
+      await api.downloadBudget(process.env.ACTUAL_BUDGET_ID, opts);
+      logger.info('Budget downloaded');
+      hasDownloadedBudget = true;
+    } catch (err) {
+      logger.warn({ err }, 'Failed to download budget');
+    }
+  }
+
+  logger.info('Syncing budget changes...');
+  try {
+    await api.sync();
+    logger.info('Budget synced');
+  } catch (err) {
+    logger.warn({ err }, 'Failed to sync budget');
+  }
 }
 
 async function closeBudget() {
+  // Reset flag so reopen re-downloads budget/prefs
+  hasDownloadedBudget = false;
   try {
     await api.shutdown();
     if (typeof api.resetBudgetCache === 'function') {
@@ -51,4 +57,9 @@ async function closeBudget() {
     process.exit(1);
   }
 }
-module.exports = { openBudget, closeBudget };
+
+/** (Test helper) Reset the internal download flag so openBudget will re-fetch. */
+function __resetBudgetDownloadFlag() {
+  hasDownloadedBudget = false;
+}
+module.exports = { openBudget, closeBudget, __resetBudgetDownloadFlag };
