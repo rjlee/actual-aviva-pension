@@ -79,6 +79,7 @@ _Web UI security:_
 SSL_KEY=/path/to/privkey.pem
 SSL_CERT=/path/to/fullchain.pem
 ```
+
 - **Self-signed certificates:** to bypass TLS verification in development only (insecure):
 
 ```bash
