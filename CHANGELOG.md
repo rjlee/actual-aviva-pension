@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/rjlee/actual-aviva-pension/compare/v1.3.1...v1.3.2) (2025-07-04)
+
+
+### Bug Fixes
+
+* Implement code changes to enhance functionality and improve performance ([1da9f4e](https://github.com/rjlee/actual-aviva-pension/commit/1da9f4e4108de07cadec21f20dd71c61bd0b2dc6))
+
 ## [1.3.1](https://github.com/rjlee/actual-aviva-pension/compare/v1.3.0...v1.3.1) (2025-06-27)
 
 
