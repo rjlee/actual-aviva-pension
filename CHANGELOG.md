@@ -1,3 +1,10 @@
+## [1.3.3](https://github.com/rjlee/actual-aviva-pension/compare/v1.3.2...v1.3.3) (2025-07-04)
+
+
+### Bug Fixes
+
+* update base image for runner stage to node:24-bullseye-slim ([a2424dc](https://github.com/rjlee/actual-aviva-pension/commit/a2424dc35f8e281285c163b51ed95f1f8aae2472))
+
 ## [1.3.2](https://github.com/rjlee/actual-aviva-pension/compare/v1.3.1...v1.3.2) (2025-07-04)
 
 
