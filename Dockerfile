@@ -1,4 +1,4 @@
-FROM node:20-bullseye-slim AS builder
+FROM node:24-bullseye-slim AS builder
 
 # Set working directory
 WORKDIR /app
