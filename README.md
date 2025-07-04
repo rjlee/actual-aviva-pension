@@ -35,6 +35,8 @@ SESSION_SECRET=someLongRandomString
 # TLS/HTTPS (optional)
 SSL_KEY=/path/to/privkey.pem
 SSL_CERT=/path/to/fullchain.pem
+# Disable TLS verification for self-signed certificates (insecure; development only)
+# NODE_TLS_REJECT_UNAUTHORIZED=0
 ```
 
 2. Copy `config.example.yaml` to `config.yaml` if you need to override defaults (schedule, HTTP_PORT, MAPPING_FILE).
@@ -76,6 +78,11 @@ _Web UI security:_
 ```bash
 SSL_KEY=/path/to/privkey.pem
 SSL_CERT=/path/to/fullchain.pem
+```
+- **Self-signed certificates:** to bypass TLS verification in development only (insecure):
+
+```bash
+NODE_TLS_REJECT_UNAUTHORIZED=0
 ```
 
 - **Disable Web UI:** omit the `--ui` flag or remove the HTTP_PORT setting to run one-shot sync (`npm run sync`).
