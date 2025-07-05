@@ -39,7 +39,7 @@ SSL_CERT=/path/to/fullchain.pem
 # NODE_TLS_REJECT_UNAUTHORIZED=0
 ```
 
-2. Copy `config.example.yaml` to `config.yaml` if you need to override defaults (schedule, HTTP_PORT, MAPPING_FILE).
+2. Copy `config.example.yaml` to `config.yaml` if you need to override defaults (schedule, HTTP_PORT, DATA_DIR, BUDGET_DIR).
 
 3. Build and run with Docker Compose:
 

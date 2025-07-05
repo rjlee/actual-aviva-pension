@@ -134,7 +134,10 @@ async function startWebUi(httpPort, verbose, debug) {
     logger.info(meta, 'HTTP request');
     next();
   });
-  const mappingFile = process.env.MAPPING_FILE || config.MAPPING_FILE || './data/mapping.json';
+  const cwd = process.cwd();
+  const dataDir = process.env.DATA_DIR || config.DATA_DIR || './data';
+  const dataDirPath = path.isAbsolute(dataDir) ? dataDir : path.join(cwd, dataDir);
+  const mappingFile = path.join(dataDirPath, 'mapping.json');
 
   // Aviva login endpoints
   app.post(

@@ -1,6 +1,6 @@
+# Ignore dependencies, generated data, and misc files
 node_modules/
 resources/
-mapping.json
 budget/
 coverage/
 CHANGELOG.md

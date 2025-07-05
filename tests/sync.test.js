@@ -17,14 +17,14 @@ describe('runSync', () => {
   let tmpDir;
   beforeEach(() => {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'mapping-'));
-    process.env.MAPPING_FILE = path.join(tmpDir, 'mapping.json');
+    process.env.DATA_DIR = tmpDir;
     // reset mocks
     avivaClient.getPensionValue.mockReset();
     api.getAccountBalance.mockReset();
     api.addTransactions.mockReset();
     api.getAccounts.mockReset();
     // prepare a mapping file with one account entry
-    const mappingPath = path.resolve(process.cwd(), process.env.MAPPING_FILE);
+    const mappingPath = path.join(tmpDir, 'mapping.json');
     fs.mkdirSync(path.dirname(mappingPath), { recursive: true });
     fs.writeFileSync(
       mappingPath,

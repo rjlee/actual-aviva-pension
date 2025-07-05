@@ -1,7 +1,9 @@
 require('dotenv').config();
 const fs = require('fs');
+const path = require('path');
 const api = require('@actual-app/api');
 const logger = require('./logger');
+const config = require('./config');
 
 let hasDownloadedBudget = false;
 
@@ -14,12 +16,16 @@ async function openBudget() {
       'Please set ACTUAL_SERVER_URL, ACTUAL_PASSWORD, and ACTUAL_SYNC_ID environment variables'
     );
   }
-  const dataDir = process.env.BUDGET_CACHE_DIR || './data/budget';
-
-  fs.mkdirSync(dataDir, { recursive: true });
+  const cwd = process.cwd();
+  const baseDir = process.env.DATA_DIR || config.DATA_DIR || './data';
+  const cacheDirValue = process.env.BUDGET_DIR || config.BUDGET_DIR || path.join(baseDir, 'budget');
+  const cacheDir = path.isAbsolute(cacheDirValue)
+    ? cacheDirValue
+    : path.join(cwd, cacheDirValue);
+  fs.mkdirSync(cacheDir, { recursive: true });
 
   logger.info('Connecting to Actual API...');
-  await api.init({ dataDir, serverURL: url, password });
+  await api.init({ dataDir: cacheDir, serverURL: url, password });
 
   const opts = {};
   const budgetPassword = process.env.ACTUAL_BUDGET_ENCRYPTION_PASSWORD;
