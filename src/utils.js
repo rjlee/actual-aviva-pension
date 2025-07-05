@@ -19,9 +19,7 @@ async function openBudget() {
   const cwd = process.cwd();
   const baseDir = process.env.DATA_DIR || config.DATA_DIR || './data';
   const cacheDirValue = process.env.BUDGET_DIR || config.BUDGET_DIR || path.join(baseDir, 'budget');
-  const cacheDir = path.isAbsolute(cacheDirValue)
-    ? cacheDirValue
-    : path.join(cwd, cacheDirValue);
+  const cacheDir = path.isAbsolute(cacheDirValue) ? cacheDirValue : path.join(cwd, cacheDirValue);
   fs.mkdirSync(cacheDir, { recursive: true });
 
   logger.info('Connecting to Actual API...');
