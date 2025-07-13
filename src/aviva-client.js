@@ -108,8 +108,12 @@ async function getPensionValue({ email, password, cookiesPath, timeout = 60, deb
     // Ensure we're logged in by checking for pension details element
     await page.waitForSelector('dl.detailsList', { timeout: 15000 });
     // Extract pension value text
-    const text = await page.$eval('dl.detailsList', (el) => el.textContent);
-    const match = text.match(/£([\d.,]+)/);
+    // Use the explicit data-qa-text attribute for the total account value
+    const text = await page.$eval(
+      'dd[data-qa-text="total-account-value"]',
+      (el) => el.textContent
+    );
+    const match = text.match(/£\s*([\d.,]+)/);
     if (!match) throw new Error('Pension value not found');
     const value = parseFloat(match[1].replace(/,/g, ''));
     // Logout and save cookies
@@ -125,7 +129,9 @@ async function getPensionValue({ email, password, cookiesPath, timeout = 60, deb
     serverState.error = err.message;
     throw err;
   } finally {
-    if (browser) await browser.close();
+    if (browser) {
+      await browser.close();
+    }
   }
 }
 
