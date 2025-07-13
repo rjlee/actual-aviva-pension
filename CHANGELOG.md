@@ -1,3 +1,11 @@
+## [1.3.4](https://github.com/rjlee/actual-aviva-pension/compare/v1.3.3...v1.3.4) (2025-07-13)
+
+
+### Bug Fixes
+
+* amended pension regex match ([9f7bd9c](https://github.com/rjlee/actual-aviva-pension/commit/9f7bd9c40dfc1669b8c0b0be6dd54dadafe437a4))
+* linting ([9e17d53](https://github.com/rjlee/actual-aviva-pension/commit/9e17d53ccd2339b755bcff4aad375a2ac5fe5e2b))
+
 ## [1.3.3](https://github.com/rjlee/actual-aviva-pension/compare/v1.3.2...v1.3.3) (2025-07-04)
 
 
