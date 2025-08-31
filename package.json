@@ -8,6 +8,7 @@
     "sync": "node src/index.js --mode sync",
     "daemon": "node src/index.js --mode daemon",
     "test": "LOG_LEVEL=silent jest --passWithNoTests",
+    "test:unit": "UNIT_ONLY=true LOG_LEVEL=silent jest --runInBand",
     "prepare": "husky install || true",
     "lint": "eslint . && npm run lint:ejs",
     "format": "prettier --write .",

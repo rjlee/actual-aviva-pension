@@ -37,9 +37,16 @@ async function getPensionValue({ email, password, cookiesPath, timeout = 60, deb
   try {
     // Launch Chrome: headful if debug, else headless
     const launchOptions = { headless: !debug };
+    // Build launch args with Docker-friendly flags
+    const launchArgs = [];
+    // Use /tmp instead of /dev/shm to avoid low shared memory inside containers
+    launchArgs.push('--disable-dev-shm-usage');
     // If running in Docker, disable sandbox (many containers disallow Chrome sandbox)
     if (process.env.CHROME_DISABLE_SANDBOX) {
-      launchOptions.args = ['--no-sandbox', '--disable-setuid-sandbox'];
+      launchArgs.push('--no-sandbox', '--disable-setuid-sandbox');
+    }
+    if (launchArgs.length) {
+      launchOptions.args = launchArgs;
     }
     // Allow overriding Chromium executable (e.g. system Chromium in Docker)
     if (process.env.PUPPETEER_EXECUTABLE_PATH) {
@@ -113,11 +120,20 @@ async function getPensionValue({ email, password, cookiesPath, timeout = 60, deb
     const match = text.match(/£\s*([\d.,]+)/);
     if (!match) throw new Error('Pension value not found');
     const value = parseFloat(match[1].replace(/,/g, ''));
-    // Logout and save cookies
-    await page.goto('https://www.direct.aviva.co.uk/MyAccount/Logout/LogMeOut');
+    // Save cookies first so we retain the session even if logout navigation fails
     const cookies = (await page.cookies()) || [];
     await fs.mkdir(path.dirname(cookiesPath), { recursive: true });
     await fs.writeFile(cookiesPath, JSON.stringify(cookies, null, 2));
+
+    // Attempt logout as best-effort; ignore navigation errors (e.g., insufficient resources)
+    try {
+      await page.goto('https://www.direct.aviva.co.uk/MyAccount/Logout/LogMeOut', {
+        waitUntil: 'domcontentloaded',
+        timeout: 10000,
+      });
+    } catch (_logoutErr) {
+      // ignore logout failures
+    }
     serverState.status = 'logged-in';
     serverState.value = value;
     return value;

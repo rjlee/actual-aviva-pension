@@ -27,9 +27,9 @@ function uiPageHtml(hadRefreshToken, refreshError, uiAuthEnabled, hasCookie) {
 }
 
 /**
- * Launch the Express-based UI server
+ * Build and return the configured Express app (no listen).
  */
-async function startWebUi(httpPort, verbose, debug) {
+function createApp(verbose, debug) {
   // Aviva-client initial state: no pre-refresh; serverState will track login status
   let hadRefreshToken = false;
   let refreshError = null;
@@ -60,18 +60,6 @@ async function startWebUi(httpPort, verbose, debug) {
   app.use(express.json());
   // Serve static assets (JS/CSS) from the public/ directory at project root
   app.use(express.static(path.join(__dirname, '..', 'public')));
-
-  // If configured, serve over HTTPS using provided SSL key & cert
-  if (process.env.SSL_KEY && process.env.SSL_CERT) {
-    const sslOpts = {
-      key: fs.readFileSync(process.env.SSL_KEY),
-      cert: fs.readFileSync(process.env.SSL_CERT),
-    };
-    const server = https.createServer(sslOpts, app).listen(httpPort, () => {
-      logger.info({ port: httpPort }, 'Web UI HTTPS server listening');
-    });
-    return server;
-  }
 
   const UI_AUTH_ENABLED = process.env.UI_AUTH_ENABLED !== 'false';
   if (UI_AUTH_ENABLED) {
@@ -238,6 +226,27 @@ async function startWebUi(httpPort, verbose, debug) {
     res.status(500).json({ error: err.message });
   });
 
+  // Expose a minimal interface for tests that might call close()
+  // (supertest does not require this, but it avoids accidental crashes)
+  app.close = () => {};
+  return app;
+}
+/**
+ * Launch the Express-based UI server
+ */
+async function startWebUi(httpPort, verbose, debug) {
+  const app = createApp(verbose, debug);
+  // If configured, serve over HTTPS using provided SSL key & cert
+  if (process.env.SSL_KEY && process.env.SSL_CERT) {
+    const sslOpts = {
+      key: fs.readFileSync(process.env.SSL_KEY),
+      cert: fs.readFileSync(process.env.SSL_CERT),
+    };
+    const server = https.createServer(sslOpts, app).listen(httpPort, () => {
+      logger.info({ port: httpPort }, 'Web UI HTTPS server listening');
+    });
+    return server;
+  }
   const server = app.listen(httpPort, () => {
     const realPort = server.address().port;
     logger.info({ port: realPort }, 'Web UI server listening');
@@ -245,4 +254,4 @@ async function startWebUi(httpPort, verbose, debug) {
   return server;
 }
 
-module.exports = { startWebUi, uiPageHtml };
+module.exports = { startWebUi, uiPageHtml, createApp };

@@ -118,8 +118,30 @@ npm run lint:ejs
 npm run format
 npm run format:check
 npm test
+## Run tests in constrained environments
+
+If your environment restricts opening sockets (e.g., some sandboxes), run unit tests only:
+
+```bash
+npm run test:unit
+```
 ```
 
 ## License
 
 <Add license or disclaimer as needed>
+
+## Troubleshooting
+
+- Chrome/Puppeteer error `net::ERR_INSUFFICIENT_RESOURCES` during logout:
+  - Cause: Chromium inside containers can hit `/dev/shm` limits or run out of ephemeral resources on extra navigations.
+  - Fixes implemented: the scraper now saves cookies before attempting logout and ignores logout navigation errors; Puppeteer launches with `--disable-dev-shm-usage` by default.
+  - Additional hardening: increase container shared memory. In Docker Compose, add `shm_size: '1gb'` to the service. For `docker run`, use `--shm-size=1g`.
+
+- Actual API `SqliteError: database or disk is full`:
+  - Cause: the budget cache directory has run out of space on the host or the container’s filesystem quota.
+  - Verify free space on the host for the mapped path used as the budget cache. By default this is `./data/budget` inside the project directory (mounted at `/app/data/budget`).
+  - Fix options:
+    - Free disk space in `./data` (and `./data/budget`) or move them to a larger disk.
+    - Point the cache elsewhere by setting `BUDGET_DIR` (for example `BUDGET_DIR=/app/budget`) and bind-mount that path to a large volume in Compose.
+    - Ensure the mount is writable by the container user.
