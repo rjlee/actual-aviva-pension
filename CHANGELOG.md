@@ -1,3 +1,11 @@
+## [1.3.5](https://github.com/rjlee/actual-aviva-pension/compare/v1.3.4...v1.3.5) (2025-08-31)
+
+
+### Bug Fixes
+
+* correct formatting in README for test instructions ([7d16ced](https://github.com/rjlee/actual-aviva-pension/commit/7d16ced31e3646d4d5b9870e1edc627b7d645345))
+* remove unnecessary blank line in unit test for __resetBudgetDownloadFlag ([5703273](https://github.com/rjlee/actual-aviva-pension/commit/5703273a417f4d9eec491530e6a35fad8fdb12b7))
+
 ## [1.3.4](https://github.com/rjlee/actual-aviva-pension/compare/v1.3.3...v1.3.4) (2025-07-13)
 
 
