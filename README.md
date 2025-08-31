@@ -146,3 +146,33 @@ npm run test:unit
     - Free disk space in `./data` (and `./data/budget`) or move them to a larger disk.
     - Point the cache elsewhere by setting `BUDGET_DIR` (for example `BUDGET_DIR=/app/budget`) and bind-mount that path to a large volume in Compose.
     - Ensure the mount is writable by the container user.
+
+### Node 24 + npm compatibility
+
+On Node 24 with npm 11, native builds for `better-sqlite3` may fail (ENOENT within `node-gyp` during `npm ci`). Until prebuilt binaries or fixes land, use npm 10 with Node 24, or use Node 20 LTS.
+
+Quick fix with nvm (keep Node 24, downgrade npm):
+
+```bash
+nvm use 24.1.0
+npm i -g npm@10
+rm -rf node_modules
+npm ci
+```
+
+Alternative options:
+
+- Use Node 20 LTS for local dev/tests: `nvm use 20`
+- Keep npm 11 but force `node-gyp@10` globally:
+
+  ```bash
+  npm i -g node-gyp@10
+  npm config set node_gyp "$(npm root -g)/node-gyp/bin/node-gyp.js"
+  rm -rf node_modules && npm ci
+  ```
+
+Docker builds on `node:24` may hit the same issue; add this to the builder stage before `npm install`:
+
+```dockerfile
+RUN npm i -g npm@10
+```
