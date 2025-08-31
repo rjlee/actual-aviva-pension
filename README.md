@@ -118,13 +118,14 @@ npm run lint:ejs
 npm run format
 npm run format:check
 npm test
+```
+
 ## Run tests in constrained environments
 
 If your environment restricts opening sockets (e.g., some sandboxes), run unit tests only:
 
 ```bash
 npm run test:unit
-```
 ```
 
 ## License
