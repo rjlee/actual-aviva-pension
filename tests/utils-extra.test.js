@@ -5,4 +5,3 @@ describe('__resetBudgetDownloadFlag', () => {
     expect(() => __resetBudgetDownloadFlag()).not.toThrow();
   });
 });
-
